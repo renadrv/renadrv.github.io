@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nextplay — Finde deinen nächsten Mitspieler</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0e0e10;
+            --violet: #9b5eff;
+            --cyan: #00e0ff;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .btn-main {
+            background: linear-gradient(90deg, var(--cyan), var(--violet));
+            color: #061018;
+            transition: all 0.3s;
+        }
+        .btn-main:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        .glass {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .game-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(155, 94, 255, 0.3);
+        }
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cyan), var(--violet));
+            border-radius: 2px;
+        }
+        .map-container {
+            height: 400px;
+            background: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80');
+            background-size: cover;
+            background-position: center;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .player-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #9b5eff;
+            border: 2px solid #00e0ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(155, 94, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(155, 94, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(155, 94, 255, 0); }
+        }
+        .chat-container {
+            width: 420px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .chat-container.collapsed {
+            height: 60px;
+        }
+        .chat-header {
+            cursor: pointer;
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            transition: opacity 0.3s;
+        }
+        .chat-container.collapsed .chat-messages {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            transition: opacity 0.3s;
+        }
+        .chat-container.collapsed .chat-input {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+        .bot-message {
+            background: rgba(155, 94, 255, 0.2);
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+        }
+        .user-message {
+            background: rgba(0, 224, 255, 0.2);
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+        .chat-container.collapsed .toggle-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Rabattbanner -->
+<div id="promo-banner" class="bg-gradient-to-r from-violet-600 to-cyan-500 text-black py-3 relative overflow-hidden cursor-pointer">
+    <div class="marquee-container">
+        <div class="marquee-content">
+            💎  20%  Rabatt auf Nextplay Premium  –  Nur für kurze Zeit!  Jetzt upgraden und exklusive Features freischalten!  🎮 
+            💎  20%  Rabatt auf Nextplay Premium  –  Nur für kurze Zeit!  Jetzt upgraden und exklusive Features freischalten!  🎮
+        </div>
+    </div>
+    <button id="close-banner" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/30 rounded-full w-6 h-6 flex items-center justify-center transition-colors duration-200">
+        <i class="fas fa-times text-black text-sm"></i>
+    </button>
+</div>
+
+<!-- Premium Modal -->
+<div id="premium-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-white/10 shadow-2xl max-w-md w-full glass">
+        <!-- Header -->
+        <div class="p-6 border-b border-white/10">
+            <div class="flex justify-between items-center">
+                <h3 class="text-2xl font-bold text-white">
+                    <span class="text-cyan-400">Next</span><span class="text-violet-400">play</span> Premium
+                </h3>
+                <button id="close-modal" class="text-white/70 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <p class="text-cyan-300 mt-2 font-semibold">💎 20% Rabatt - Nur für kurze Zeit!</p>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6">
+            <!-- Preis -->
+            <div class="text-center mb-6">
+                <div class="flex items-baseline justify-center gap-2">
+                    <span class="text-white/60 line-through text-lg">€9,99</span>
+                    <span class="text-3xl font-bold text-white">€7,99</span>
+                    <span class="text-white/60">/Monat</span>
+                </div>
+                <p class="text-green-400 text-sm mt-1">Du sparst €2,00 pro Monat!</p>
+            </div>
+
+            <!-- Features -->
+            <div class="space-y-3 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <span class="text-white">Unbegrenzte Spieler-Matches</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <span class="text-white">Erweiterte Statistiken</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <span class="text-white">Exklusive Events & Turniere</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <span class="text-white">Priorisierte Unterstützung</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                    <span class="text-white">Werbefreie Erfahrung</span>
+                </div>
+            </div>
+
+            <!-- CTA Button -->
+            <button class="w-full bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                Jetzt Premium aktivieren – €7,99/Monat
+            </button>
+
+            <!-- Hinweis -->
+            <p class="text-white/60 text-xs text-center mt-4">
+                Jederzeit kündbar. Keine versteckten Kosten.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Banner Animation */
+    .marquee-container {
+        overflow: hidden;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    .marquee-content {
+        display: inline-block;
+        padding-left: 0%;
+        animation: marquee 300s linear infinite;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    @keyframes marquee {
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+
+    /* Pause Animation on hover */
+    #promo-banner:hover .marquee-content {
+        animation-play-state: paused;
+    }
+
+    /* Modal Styles */
+    #premium-modal {
+        backdrop-filter: blur(8px);
+    }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Smooth transitions */
+    #premium-modal {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+
+    #premium-modal.show {
+        opacity: 1;
+    }
+
+    #premium-modal .glass {
+        transform: scale(0.9);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    #premium-modal.show .glass {
+        transform: scale(1);
+    }
+</style>
+
+<script>
+    // Banner und Modal Funktionen
+    document.addEventListener('DOMContentLoaded', function() {
+        const promoBanner = document.getElementById('promo-banner');
+        const closeBanner = document.getElementById('close-banner');
+        const premiumModal = document.getElementById('premium-modal');
+        const closeModal = document.getElementById('close-modal');
+
+        // Banner schließen
+        closeBanner.addEventListener('click', function(e) {
+            e.stopPropagation();
+            promoBanner.style.display = 'none';
+        });
+
+        // Banner klicken öffnet Modal
+        promoBanner.addEventListener('click', function() {
+            premiumModal.classList.remove('hidden');
+            premiumModal.classList.add('show', 'flex');
+            document.body.style.overflow = 'hidden';
+        });
+
+        // Modal schließen
+        closeModal.addEventListener('click', function() {
+            premiumModal.classList.remove('show', 'flex');
+            premiumModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Modal schließen bei Klick außerhalb
+        premiumModal.addEventListener('click', function(e) {
+            if (e.target === premiumModal) {
+                premiumModal.classList.remove('show', 'flex');
+                premiumModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // ESC Taste zum Schließen
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && premiumModal.classList.contains('show')) {
+                premiumModal.classList.remove('show', 'flex');
+                premiumModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+    });
+</script>
+
+    <!-- Header -->
+    <header class="max-w-7xl mx-auto flex justify-between items-center p-4">
+        <h1 class="text-2xl font-bold"><span class="text-cyan-400">Next</span><span class="text-violet-400">play</span></h1>
+        <nav class="hidden md:flex gap-6 text-sm text-white/80">
+            <a href="#start">Start</a>
+            <a href="#features">Features</a>
+            <a href="#trending">Trend-Spiele</a>
+            <a href="#eventpass">Eventpass</a>
+            <a href="#map">Karte</a>
+            <a href="#about">Über Uns</a>
+        </nav>
+        <div class="flex gap-3 items-center">
+            <button class="text-sm glass px-3 py-1 rounded-lg">DE / EN</button>
+            <button class="btn-main px-4 py-2 rounded-lg font-semibold">Beitreten</button>
+        </div>
+    </header>
+
+<!-- Hero -->
+<section id="start" class="text-center p-8 pt-12">
+    <h2 class="text-4xl md:text-5xl font-extrabold mb-3">
+        <span class="hero-text animate-fadeInUp">Finde deinen nächsten </span>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-violet-400 hero-text animate-gradientSlide">Mitspieler</span>
+    </h2>
+    <p class="text-white/70 max-w-2xl mx-auto mb-6 text-lg opacity-0 animate-fadeInUp animation-delay-300">
+        Nextplay ist die Plattform für Gamer, die neue Freunde, Teams oder Mitspieler suchen. Egal ob Casual oder Pro – entdecke Gleichgesinnte in deiner Nähe, chatte mit ihnen und organisiere unkompliziert gemeinsame Sessions.
+    </p>
+
+
+ <!-- Nextplay in Zahlen -->
+<div class="glass p-8 rounded-3xl max-w-4xl mx-auto opacity-0 animate-fadeInUp animation-delay-700">
+    <h3 class="text-2xl font-semibold mb-8">Täglich neue Spieler</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div class="text-center">
+            <div class="text-4xl font-bold text-cyan-400 mb-2" id="player-count">120.357</div>
+            <div class="text-white/70">aktive Spieler</div>
+            <div class="text-green-400 text-sm mt-1">+<span id="player-increase">0</span> neu</div>
+        </div>
+        <div class="text-center">
+            <div class="text-4xl font-bold text-violet-400 mb-2" id="matches-count">8.523</div>
+            <div class="text-white/70">tägliche Matches</div>
+            <div class="text-green-400 text-sm mt-1">+<span id="matches-increase">0</span> neu</div>
+        </div>
+        <div class="text-center">
+            <div class="text-4xl font-bold text-cyan-400 mb-2" id="events-count">57</div>
+            <div class="text-white/70">anstehende Events </div>
+            <!-- Keine Erhöhung mehr bei Events -->
+            <div class="text-green-400 text-sm mt-1 invisible">+0 neu</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Startwerte
+    let playerCount = 120357;
+    let matchesCount = 8523;
+    let eventsCount = 37; // Bleibt konstant
+
+    // Funktion zum Formatieren der Zahlen mit deutschen Trennern
+    function formatNumber(num) {
+        return num.toLocaleString('de-DE');
+    }
+
+    // Funktion zum Erhöhen der Zahlen
+    function increaseNumbers() {
+        // Zufällige Erhöhung zwischen 1 und 10 (nur für Spieler und Matches)
+        const playerIncrease = Math.floor(Math.random() * 50) + 1;
+        const matchesIncrease = Math.floor(Math.random() * 10) + 1;
+        // Events erhöhen sich nicht mehr
+
+        // Werte erhöhen (nur Spieler und Matches)
+        playerCount += playerIncrease;
+        matchesCount += matchesIncrease;
+        // eventsCount bleibt unverändert
+
+        // Anzeige aktualisieren
+        document.getElementById('player-count').textContent = formatNumber(playerCount);
+        document.getElementById('matches-count').textContent = formatNumber(matchesCount);
+        document.getElementById('events-count').textContent = formatNumber(eventsCount); // Bleibt konstant
+
+        // Erhöhungen anzeigen (nur für Spieler und Matches)
+        document.getElementById('player-increase').textContent = playerIncrease;
+        document.getElementById('matches-increase').textContent = matchesIncrease;
+        // Keine Erhöhung bei Events
+
+        // Animation für die Erhöhungen (nur für Spieler und Matches)
+        const increases = document.querySelectorAll('#player-increase, #matches-increase');
+        increases.forEach(el => {
+            el.style.display = 'inline-block';
+            el.style.animation = 'fadeUp 0.5s ease-out';
+            setTimeout(() => {
+                el.style.animation = '';
+            }, 500);
+        });
+    }
+
+    // CSS Animation für die Erhöhungen
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            50% { opacity: 1; transform: translateY(-2px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Starte die kontinuierliche Erhöhung
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial anzeigen
+        document.getElementById('player-count').textContent = formatNumber(playerCount);
+        document.getElementById('matches-count').textContent = formatNumber(matchesCount);
+        document.getElementById('events-count').textContent = formatNumber(eventsCount);
+
+        // Alle 2 Sekunden erhöhen (nur Spieler und Matches)
+        setInterval(increaseNumbers, 2000);
+    });
+</script>
+
+<style>
+    /* Hero Text Animationen */
+    .hero-text {
+        display: inline-block;
+    }
+    
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .animate-gradientSlide {
+        animation: gradientSlide 1.2s ease-out forwards, glowPulse 3s ease-in-out infinite 1.2s;
+    }
+    
+    .animation-delay-300 {
+        animation-delay: 0.3s;
+    }
+    
+    .animation-delay-500 {
+        animation-delay: 0.5s;
+    }
+    
+    .animation-delay-700 {
+        animation-delay: 0.7s;
+    }
+    
+    @keyframes fadeInUp {
+        0% {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes gradientSlide {
+        0% {
+            opacity: 0;
+            background-size: 200% 200%;
+            background-position: -100% 0;
+        }
+        60% {
+            opacity: 0.8;
+            background-size: 200% 200%;
+            background-position: 100% 0;
+        }
+        100% {
+            opacity: 1;
+            background-size: 200% 200%;
+            background-position: 0% 0;
+        }
+    }
+    
+    @keyframes glowPulse {
+        0%, 100% {
+            filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.5));
+        }
+        50% {
+            filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.7));
+        }
+    }
+</style>
+
+<script>
+    // Startwerte
+    let playerCount = 120357;
+    let matchesCount = 8523;
+    let eventsCount = 257;
+
+    // Funktion zum Formatieren der Zahlen mit deutschen Trennern
+    function formatNumber(num) {
+        return num.toLocaleString('de-DE');
+    }
+
+    // Funktion zum Erhöhen der Zahlen
+    function increaseNumbers() {
+        // Zufällige Erhöhung zwischen 1 und 10
+        const playerIncrease = Math.floor(Math.random() * 10) + 1;
+        const matchesIncrease = Math.floor(Math.random() * 10) + 1;
+        const eventsIncrease = Math.floor(Math.random() * 5) + 1; // Weniger Events
+
+        // Werte erhöhen
+        playerCount += playerIncrease;
+        matchesCount += matchesIncrease;
+        eventsCount += eventsIncrease;
+
+        // Anzeige aktualisieren
+        document.getElementById('player-count').textContent = formatNumber(playerCount);
+        document.getElementById('matches-count').textContent = formatNumber(matchesCount);
+        document.getElementById('events-count').textContent = formatNumber(eventsCount);
+
+        // Erhöhungen anzeigen
+        document.getElementById('player-increase').textContent = playerIncrease;
+        document.getElementById('matches-increase').textContent = matchesIncrease;
+        document.getElementById('events-increase').textContent = eventsIncrease;
+
+        // Animation für die Erhöhungen
+        const increases = document.querySelectorAll('#player-increase, #matches-increase, #events-increase');
+        increases.forEach(el => {
+            el.style.display = 'inline-block';
+            el.style.animation = 'fadeUp 0.5s ease-out';
+            setTimeout(() => {
+                el.style.animation = '';
+            }, 500);
+        });
+    }
+
+    // CSS Animation für die Erhöhungen
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            50% { opacity: 1; transform: translateY(-2px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Starte die kontinuierliche Erhöhung
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial anzeigen
+        document.getElementById('player-count').textContent = formatNumber(playerCount);
+        document.getElementById('matches-count').textContent = formatNumber(matchesCount);
+        document.getElementById('events-count').textContent = formatNumber(eventsCount);
+
+        // Alle 2 Sekunden erhöhen
+        setInterval(increaseNumbers, 2000);
+    });
+</script>
+
+    <!-- Features -->
+    <section id="features" class="max-w-7xl mx-auto p-6 mt-8">
+        <h3 class="section-title text-2xl font-semibold text-center w-full">Features</h3>
+        
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-cyan-400">🎯 Smart Matchmaking</h4>
+                <p class="text-sm text-white/70">Finde automatisch Mitspieler mit ähnlichen Interessen, Games und Spielzeiten.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-violet-400">🎧 Voice & Video Chat</h4>
+                <p class="text-sm text-white/70">Verbinde dich direkt über integrierte Sprach- und Videochats.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-cyan-400">🏆 Level & XP-System</h4>
+                <p class="text-sm text-white/70">Sammle Erfahrungspunkte, steig im Rang auf und verdiene Abzeichen.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-violet-400">🌍 Regionale Suche</h4>
+                <p class="text-sm text-white/70">Finde Spieler in deiner Nähe für lokale Treffen und Events.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-cyan-400">📊 Performance Analytics</h4>
+                <p class="text-sm text-white/70">Detaillierte Statistiken zu deinem Spielverhalten und Fortschritt.</p>
+            </div>
+            <div class="glass p-6 rounded-2xl game-card">
+                <h4 class="font-semibold text-lg mb-2 text-violet-400">🎮 Turnier-Modus</h4>
+                <p class="text-sm text-white/70">Nimm an Community-Turnieren teil und gewinne exklusive Preise.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Games -->
+    <section id="trending" class="max-w-7xl mx-auto p-6 mt-12">
+        <h3 class="section-title text-2xl font-semibold text-center w-full">Aktuelle Trend-Spiele</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Game 1 -->
+            <div class="glass rounded-2xl overflow-hidden game-card">
+                <img src="https://i.ytimg.com/vi/adGdyCdvKz4/maxresdefault.jpg" alt="Fortnite" class="w-full h-40 object-cover">
+                <div class="p-4">
+                    <h4 class="font-semibold text-lg mb-1">Fortnite</h4>
+                    <p class="text-xs text-white/60 mb-2">Battle Royale • Kostenlos</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-400 text-sm">🔥 245K Spieler</span>
+                        <button class="text-xs bg-violet-600 px-2 py-1 rounded">Spielen</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game 2 -->
+            <div class="glass rounded-2xl overflow-hidden game-card">
+                <img src="https://cdn1.epicgames.com/offer/cbd5b3d310a54b12bf3fe8c41994174f/EGS_VALORANT_RiotGames_S1_2560x1440-892482f9cbec5827c7c4989d7feb2bf1" alt="Valorant" class="w-full h-40 object-cover">
+                <div class="p-4">
+                    <h4 class="font-semibold text-lg mb-1">Valorant</h4>
+                    <p class="text-xs text-white/60 mb-2">Tactical Shooter • Kostenlos</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-400 text-sm">🔥 180K Spieler</span>
+                        <button class="text-xs bg-violet-600 px-2 py-1 rounded">Spielen</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game 3 -->
+            <div class="glass rounded-2xl overflow-hidden game-card">
+                <img src="https://leclaireur.fnac.com/wp-content/uploads/2022/06/mwii-002-reveal-004-1256x826.jpg" alt="Call of Duty: Warzone" class="w-full h-40 object-cover">
+                <div class="p-4">
+                    <h4 class="font-semibold text-lg mb-1">Call of Duty: Warzone</h4>
+                    <p class="text-xs text-white/60 mb-2">Battle Royale • Kostenlos</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-400 text-sm">🔥 210K Spieler</span>
+                        <button class="text-xs bg-violet-600 px-2 py-1 rounded">Spielen</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Game 4 -->
+            <div class="glass rounded-2xl overflow-hidden game-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWPqnj181ZnwqsmRmCXVxg9MzGZ1vQqd7kiw&s" alt="Apex Legends" class="w-full h-40 object-cover">
+                <div class="p-4">
+                    <h4 class="font-semibold text-lg mb-1">Apex Legends</h4>
+                    <p class="text-xs text-white/60 mb-2">Battle Royale • Kostenlos</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cyan-400 text-sm">🔥 165K Spieler</span>
+                        <button class="text-xs bg-violet-600 px-2 py-1 rounded">Spielen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+<!-- Eventpass / Bonus-System -->
+<section id="eventpass" class="max-w-7xl mx-auto p-6 mt-12">
+    <h3 class="section-title text-2xl font-semibold text-center w-full">Eventpass & Bonus-System</h3>
+    
+    <div class="glass p-6 rounded-2xl mt-6">
+        <div class="flex flex-col md:flex-row gap-8 items-center">
+            <div class="md:w-1/3 flex justify-center">
+                <div class="relative">
+                    <div class="w-48 h-48 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-white text-6xl font-bold shadow-lg animate-pulse">
+                        EP
+                    </div>
+                    <div class="absolute -top-2 -right-2 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold animate-bounce">
+                        NEU
+                    </div>
+                    <div class="absolute inset-0 rounded-full border-4 border-cyan-400 animate-ping opacity-75"></div>
+                    <div class="absolute inset-4 rounded-full border-2 border-violet-400 animate-spin duration-3000"></div>
+                </div>
+            </div>
+            
+            <div class="md:w-2/3">
+                <h4 class="font-semibold text-2xl mb-4 text-cyan-400">Sammle Punkte, gewinne Tickets!</h4>
+                <p class="text-white/70 mb-4">
+                    Mit dem Nextplay Eventpass sammelst du Punkte bei Gaming-Events, indem du neue Mitspieler kennenlernst und mit ihnen spielst. 
+                    Diese Punkte kannst du für exklusive Gewinnspiele nutzen und Tickets für große Gaming-Events gewinnen!
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="bg-violet-500/20 p-2 rounded-lg mr-3">
+                            <i class="fas fa-ticket-alt text-violet-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold">Event-Tickets gewinnen</h5>
+                            <p class="text-white/60 text-sm">Tausche Punkte gegen Tickets für große Events</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="bg-cyan-500/20 p-2 rounded-lg mr-3">
+                            <i class="fas fa-users text-cyan-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold">Neue Spieler treffen</h5>
+                            <p class="text-white/60 text-sm">Sammle Punkte für jedes neue Match</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="bg-violet-500/20 p-2 rounded-lg mr-3">
+                            <i class="fas fa-medal text-violet-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold">Exklusive Belohnungen</h5>
+                            <p class="text-white/60 text-sm">Freischaltbare Inhalte & Abzeichen</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="bg-cyan-500/20 p-2 rounded-lg mr-3">
+                            <i class="fas fa-calendar-alt text-cyan-400"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-semibold">Regionale Events</h5>
+                            <p class="text-white/60 text-sm">Finde Events in deiner Nähe</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button class="btn-main px-6 py-3 rounded-xl font-semibold flex-1 text-center">
+                        Jetzt Eventpass aktivieren
+                    </button>
+                    <button class="glass px-6 py-3 rounded-xl font-semibold flex-1 text-center border border-cyan-400/30 text-cyan-400">
+                        Kommende Events ansehen
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fortschrittsbalken -->
+        <div class="mt-8 pt-6 border-t border-white/10">
+            <h5 class="font-semibold text-lg mb-4 text-center">Dein aktueller Eventpass-Fortschritt</h5>
+            
+            <div class="max-w-2xl mx-auto">
+                <div class="flex justify-between text-sm text-white/70 mb-2">
+                    <span>Aktuelle Punkte: <span class="text-cyan-400 font-semibold">100</span></span>
+                    <span>Nächstes Level: <span class="text-violet-400 font-semibold">500 Punkte</span></span>
+                </div>
+                
+                <div class="w-full bg-gray-700 rounded-full h-4 mb-6">
+                    <div class="bg-gradient-to-r from-cyan-400 to-violet-500 h-4 rounded-full" style="width: 20%"></div>
+                </div>
+                
+                <div class="flex justify-between text-xs text-white/60">
+                    <span>Bronze (100)</span>
+                    <span>Silber (500)</span>
+                    <span>Gold (1000)</span>
+                    <span>Platin (2000)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Karte -->
+<section id="map" class="max-w-7xl mx-auto p-6 mt-12">
+    <h3 class="section-title text-2xl font-semibold text-center w-full">Spieler in deiner Nähe</h3>
+    
+    <div class="mt-6 glass rounded-2xl overflow-hidden">
+        <div id="berlin-map" style="height: 500px; width: 100%;"></div>
+    </div>
+
+    <!-- Legende -->
+    <div class="flex flex-wrap justify-center gap-6 mt-4">
+        <div class="flex items-center">
+            <div class="w-4 h-4 bg-cyan-400 rounded-full mr-2"></div>
+            <span class="text-sm text-white/70">Dein Standort</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-violet-500 rounded-full mr-2"></div>
+            <span class="text-sm text-white/70">Andere Spieler</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            <span class="text-sm text-white/70">Online</span>
+        </div>
+        <div class="flex items-center">
+            <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+            <span class="text-sm text-white/70">Vor kurzem online</span>
+        </div>
+    </div>
+</section>
+
+<!-- Leaflet CSS und JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Spieler-Daten für Berlin - mit funktionierenden Avatars und besseren Positionen
+    const players = [
+        { 
+            name: "Nova", 
+            age: 23, 
+            distance: "2 km", 
+            games: ["Valorant", "Overwatch"], 
+            lat: 52.518, 
+            lng: 13.408, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["ESL Berlin", "Valorant Turnier", "Gaming Night Mitte"]
+        },
+        { 
+            name: "Lina", 
+            age: 22, 
+            distance: "1 km", 
+            games: ["Minecraft", "Stardew Valley"], 
+            lat: 52.516, 
+            lng: 13.402, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+            level: "Casual",
+            playstyle: "Entspannung",
+            languages: ["Deutsch"],
+            events: ["Minecraft Build Contest", "Community Treffen"]
+        },
+        { 
+            name: "Kaito", 
+            age: 19, 
+            distance: "3 km", 
+            games: ["Apex Legends", "Fortnite"], 
+            lat: 52.522, 
+            lng: 13.412, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch", "Japanisch"],
+            events: ["Apex Legends Tournament", "Berlin Gaming Week"]
+        },
+        { 
+            name: "Mara", 
+            age: 21, 
+            distance: "2 km", 
+            games: ["Call of Duty", "Warzone"], 
+            lat: 52.520, 
+            lng: 13.395, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["Call of Duty Liga", "ESL Berlin", "Pro Gaming Night"]
+        },
+        { 
+            name: "Tobi", 
+            age: 25, 
+            distance: "4 km", 
+            games: ["Rocket League", "FIFA 24"], 
+            lat: 52.514, 
+            lng: 13.418, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Casual Competitive",
+            languages: ["Deutsch"],
+            events: ["Rocket League Cup", "FIFA Community Turnier"]
+        },
+        { 
+            name: "Yuki", 
+            age: 18, 
+            distance: "3 km", 
+            games: ["Genshin Impact", "Valorant"], 
+            lat: 52.524, 
+            lng: 13.405, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
+            level: "Anfänger",
+            playstyle: "Entspannung",
+            languages: ["Deutsch", "Englisch"],
+            events: ["Genshin Impact Meetup", "Anfänger Gaming Night"]
+        },
+        { 
+            name: "Max", 
+            age: 20, 
+            distance: "5 km", 
+            games: ["CS2", "Valorant"], 
+            lat: 52.510, 
+            lng: 13.425, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["CS2 Major Qualifier", "Valorant Champions Tour"]
+        },
+        { 
+            name: "Anna", 
+            age: 24, 
+            distance: "1 km", 
+            games: ["The Sims", "Fortnite"], 
+            lat: 52.519, 
+            lng: 13.415, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+            level: "Casual",
+            playstyle: "Entspannung",
+            languages: ["Deutsch", "Englisch"],
+            events: ["Creative Gaming Night", "Fortnite Community Event"]
+        },
+        { 
+            name: "Elias", 
+            age: 27, 
+            distance: "4 km", 
+            games: ["League of Legends", "Valorant"], 
+            lat: 52.526, 
+            lng: 13.398, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Competitive",
+            languages: ["Deutsch"],
+            events: ["LoL Ranking Night", "Valorant Weekly Tournament"]
+        },
+        // Weitere Spieler - gleichmäßig verteilt
+        { 
+            name: "Sarah", 
+            age: 26, 
+            distance: "3 km", 
+            games: ["World of Warcraft", "Diablo IV"], 
+            lat: 52.517, 
+            lng: 13.422, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "RPG Enthusiast",
+            languages: ["Deutsch", "Englisch"],
+            events: ["WoW Raid Night", "RPG Convention Berlin"]
+        },
+        { 
+            name: "Leo", 
+            age: 29, 
+            distance: "4 km", 
+            games: ["Dota 2", "CS2"], 
+            lat: 52.512, 
+            lng: 13.408, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch", "Russisch"],
+            events: ["Dota 2 Major", "CS2 Pro Scene"]
+        },
+        { 
+            name: "Mia", 
+            age: 21, 
+            distance: "2 km", 
+            games: ["Animal Crossing", "Genshin Impact"], 
+            lat: 52.521, 
+            lng: 13.398, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+            level: "Casual",
+            playstyle: "Entspannung",
+            languages: ["Deutsch"],
+            events: ["Animal Crossing Festival", "Cozy Gaming Meetup"]
+        },
+        { 
+            name: "Finn", 
+            age: 24, 
+            distance: "5 km", 
+            games: ["Rainbow Six Siege", "Call of Duty"], 
+            lat: 52.508, 
+            lng: 13.415, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Tactical Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["R6 Pro League", "Tactical Shooter Night"]
+        },
+        { 
+            name: "Hannah", 
+            age: 22, 
+            distance: "2 km", 
+            games: ["Overwatch 2", "Valorant"], 
+            lat: 52.523, 
+            lng: 13.418, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["Overwatch League", "Women in Gaming Event"]
+        },
+        { 
+            name: "Ben", 
+            age: 28, 
+            distance: "6 km", 
+            games: ["Elden Ring", "Dark Souls"], 
+            lat: 52.515, 
+            lng: 13.428, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Hardcore",
+            languages: ["Deutsch"],
+            events: ["Souls-like Challenge", "Hardcore Gaming Night"]
+        },
+        { 
+            name: "Lena", 
+            age: 19, 
+            distance: "1 km", 
+            games: ["League of Legends", "Teamfight Tactics"], 
+            lat: 52.519, 
+            lng: 13.405, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Strategy",
+            languages: ["Deutsch", "Englisch"],
+            events: ["LoL Clash Tournament", "TFT Ranked Night"]
+        },
+        { 
+            name: "Paul", 
+            age: 31, 
+            distance: "5 km", 
+            games: ["StarCraft II", "Age of Empires"], 
+            lat: 52.511, 
+            lng: 13.432, 
+            status: "recent", 
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+            level: "Pro",
+            playstyle: "Strategy Master",
+            languages: ["Deutsch", "Englisch", "Koreanisch"],
+            events: ["StarCraft II Tournament", "RTS Championship"]
+        },
+        { 
+            name: "Sophie", 
+            age: 25, 
+            distance: "3 km", 
+            games: ["GTA V", "Red Dead Redemption"], 
+            lat: 52.525, 
+            lng: 13.412, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+            level: "Casual",
+            playstyle: "Open World",
+            languages: ["Deutsch", "Englisch"],
+            events: ["GTA Roleplay Event", "Open World Gaming"]
+        },
+        { 
+            name: "Tom", 
+            age: 26, 
+            distance: "4 km", 
+            games: ["Rocket League", "FIFA 24"], 
+            lat: 52.513, 
+            lng: 13.425, 
+            status: "online", 
+            avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+            level: "Fortgeschritten",
+            playstyle: "Competitive",
+            languages: ["Deutsch", "Englisch"],
+            events: ["Rocket League Championship", "FIFA Pro Clubs"]
+        }
+    ];
+
+    // Karte initialisieren
+    function initMap() {
+        // Berlin als Zentrum - KEIN ZOOM MÖGLICH
+        const map = L.map('berlin-map', {
+            center: [52.5200, 13.4050],
+            zoom: 13,
+            zoomControl: false, // Zoom Controls komplett entfernt
+            scrollWheelZoom: false, // Mausrad-Zoom deaktiviert
+            doubleClickZoom: false, // Doppelklick-Zoom deaktiviert
+            boxZoom: false, // Box-Zoom deaktiviert
+            keyboard: false, // Tastatur-Zoom deaktiviert
+            dragging: true, // Verschieben weiterhin erlaubt
+            touchZoom: false, // Touch-Zoom deaktiviert
+            minZoom: 13, // Fester Zoom-Level
+            maxZoom: 13  // Fester Zoom-Level
+        });
+
+        // Dark Map Stil von CartoDB
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 13
+        }).addTo(map);
+
+        // Deinen Standort markieren (Berlin Mitte) - OHNE ANIMATION
+        const myLocation = L.marker([52.5200, 13.4050], {
+            icon: L.divIcon({
+                className: 'my-location-marker',
+                html: `
+                    <div class="w-6 h-6 bg-cyan-400 rounded-full border-2 border-white shadow-lg"></div>
+                `,
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]
+            })
+        }).addTo(map);
+
+        myLocation.bindPopup(`
+            <div class="text-center p-3 min-w-48">
+                <div class="font-bold text-cyan-400 text-lg mb-1">Dein Standort</div>
+                <div class="text-sm text-white/70 mb-2">Berlin Mitte</div>
+                <div class="text-xs text-white/50">Du bist hier zu Hause</div>
+            </div>
+        `);
+
+        // Spieler-Marker hinzufügen
+        players.forEach(player => {
+            const statusColor = player.status === 'online' ? '#10b981' : '#f59e0b';
+            const statusText = player.status === 'online' ? 'Jetzt online' : 'Vor kurzem online';
+            const levelColor = player.level === 'Pro' ? '#ef4444' : 
+                             player.level === 'Fortgeschritten' ? '#f59e0b' : 
+                             player.level === 'Casual' ? '#3b82f6' : '#10b981';
+            
+            const playerIcon = L.divIcon({
+                className: 'player-marker',
+                html: `
+                    <div class="relative cursor-pointer transform transition-transform duration-200 hover:scale-125">
+                        <div class="w-4 h-4 bg-violet-500 rounded-full border-2 border-white shadow-lg"></div>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900" style="background-color: ${statusColor}"></div>
+                    </div>
+                `,
+                iconSize: [16, 16],
+                iconAnchor: [8, 8]
+            });
+
+            const marker = L.marker([player.lat, player.lng], { icon: playerIcon }).addTo(map);
+
+            // Popup mit Spieler-Informationen
+            const popupContent = `
+                <div class="min-w-64 p-4">
+                    <!-- Header mit Avatar und Basisinfo -->
+                    <div class="flex items-center gap-3 mb-3">
+                        <img src="${player.avatar}" class="w-14 h-14 rounded-full object-cover border-2 border-violet-500" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face'">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <div class="font-bold text-white text-lg">${player.name}</div>
+                                <span class="px-2 py-1 text-xs rounded-full text-white font-semibold" style="background-color: ${levelColor}">
+                                    ${player.level}
+                                </span>
+                            </div>
+                            <div class="text-sm text-white/70">${player.age} Jahre • ${player.distance} entfernt</div>
+                            <div class="text-xs mt-1 flex items-center gap-1" style="color: ${statusColor}">
+                                <div class="w-2 h-2 rounded-full" style="background-color: ${statusColor}"></div>
+                                ${statusText}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spielstil -->
+                    <div class="mb-3">
+                        <div class="text-sm font-semibold text-cyan-400 mb-1">Spielstil:</div>
+                        <div class="text-sm text-white/70">${player.playstyle}</div>
+                    </div>
+
+                    <!-- Spiele -->
+                    <div class="mb-3">
+                        <div class="text-sm font-semibold text-cyan-400 mb-1">Spielt:</div>
+                        <div class="text-sm text-white/70">${player.games.join(', ')}</div>
+                    </div>
+
+                    <!-- Gaming Events -->
+                    <div class="mb-3">
+                        <div class="text-sm font-semibold text-cyan-400 mb-1">Besucht Events:</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${player.events.map(event => 
+                                `<span class="px-2 py-1 text-xs bg-cyan-500/20 rounded-full text-cyan-300 border border-cyan-500/30">${event}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Sprachen -->
+                    <div class="mb-4">
+                        <div class="text-sm font-semibold text-cyan-400 mb-1">Sprachen:</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${player.languages.map(lang => 
+                                `<span class="px-2 py-1 text-xs bg-white/10 rounded-full text-white/80">${lang}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                        <button class="flex-1 bg-violet-600 hover:bg-violet-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors duration-200">
+                            Profil ansehen
+                        </button>
+                        <button class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors duration-200">
+                            Nachricht
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                className: 'custom-popup',
+                maxWidth: 320
+            });
+
+            // Hover-Effekte
+            marker.on('mouseover', function() {
+                // Marker vergrößern und Farbe ändern
+                marker.setIcon(L.divIcon({
+                    className: 'player-marker-hover',
+                    html: `
+                        <div class="relative cursor-pointer">
+                            <div class="w-6 h-6 bg-violet-400 rounded-full border-2 border-white shadow-lg"></div>
+                            <div class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900" style="background-color: ${statusColor}"></div>
+                        </div>
+                    `,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                }));
+                
+                // Popup nach kurzer Verzögerung öffnen
+                setTimeout(() => {
+                    if (!marker.isPopupOpen()) {
+                        marker.openPopup();
+                    }
+                }, 300);
+            });
+
+            marker.on('mouseout', function() {
+                // Marker zurück zur normalen Größe
+                marker.setIcon(playerIcon);
+            });
+
+            // Klick-Event für Mobile
+            marker.on('click', function() {
+                marker.openPopup();
+            });
+        });
+
+        // Scale Control hinzufügen (Zoom Control ist deaktiviert)
+        L.control.scale({
+            imperial: false,
+            position: 'bottomleft'
+        }).addTo(map);
+    }
+
+    // Karte initialisieren wenn DOM geladen
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+    });
+
+    // Responsive Anpassungen
+    window.addEventListener('resize', function() {
+        const map = document.getElementById('berlin-map');
+        if (map && map._leaflet_map) {
+            setTimeout(() => {
+                map._leaflet_map.invalidateSize();
+            }, 100);
+        }
+    });
+</script>
+
+<style>
+    /* Leaflet Karte anpassen für Dark Theme */
+    .leaflet-container {
+        background: #0e0e10;
+        font-family: 'Poppins', sans-serif;
+        border-radius: 16px;
+        cursor: grab;
+    }
+    
+    .leaflet-container:active {
+        cursor: grabbing;
+    }
+    
+    .leaflet-popup-content-wrapper {
+        background: rgba(30, 30, 35, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px;
+        color: white;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+    
+    .leaflet-popup-content {
+        margin: 0;
+        line-height: 1.5;
+    }
+    
+    .leaflet-popup-tip {
+        background: rgba(30, 30, 35, 0.95);
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    
+    /* Zoom Controls sind komplett entfernt */
+    .leaflet-control-zoom {
+        display: none !important;
+    }
+    
+    .leaflet-control-scale-line {
+        background: rgba(30, 30, 35, 0.9) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.15) !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Marker Styling - OHNE ANIMATION für eigenen Standort */
+    .my-location-marker {
+        /* Keine Animation */
+    }
+    
+    .player-marker {
+        transition: all 0.3s ease;
+    }
+    
+    .player-marker-hover {
+        z-index: 1000 !important;
+    }
+    
+    /* Responsive Anpassungen */
+    @media (max-width: 768px) {
+        #berlin-map {
+            height: 400px !important;
+        }
+        
+        .leaflet-popup-content {
+            font-size: 14px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        #berlin-map {
+            height: 350px !important;
+        }
+    }
+</style>
+
+    <!-- Geschichte -->
+    <section id="about" class="max-w-7xl mx-auto p-6 mt-12">
+        <h3 class="section-title text-2xl font-semibold text-center w-full">Unsere Geschichte</h3>
+        <div class="flex flex-col md:flex-row gap-8 items-stretch mt-8">
+            <div class="md:w-1/2">
+                <img src="https://cdn.sanity.io/images/dsfx7636/news_live/33681732006b6845cd3955a0e51474563c1930e3-2048x1366.jpg" alt="Nextplay Gründerteam" class="rounded-2xl w-full h-full object-cover">
+            </div>
+            <div class="md:w-1/2 glass p-6 rounded-2xl flex flex-col justify-center">
+                <p class="text-white/70 mb-4">
+                    Nextplay wurde 2025 von einem leidenschaftlichen Team aus Gamern und Entwicklern gegründet, die frustriert waren über die mangelnden Möglichkeiten, gleichgesinnte Spieler in ihrer Nähe zu finden.
+                </p>
+                <p class="text-white/70 mb-4">
+                    Was als kleines Projekt in einem Berliner Co-Working-Space begann, entwickelte sich schnell zu einer der führenden Gaming-Community-Plattformen in Europa.
+                </p>
+                <p class="text-white/70 mb-4">
+                    Unser Ziel war und ist es, Gaming-Communities zusammenzubringen und das Spielerlebnis durch echte soziale Verbindungen zu bereichern.
+                </p>
+                <p class="text-white/70">
+                    Heute verbindet Nextplay über 120.000 Spieler in mehr als 15 Ländern und wächst stetig weiter.
+                </p>
+            </div>
+        </div>
+    </section>
+	
+	
+        
+    <!-- Rezensionen -->
+    <section id="reviews" class="max-w-7xl mx-auto p-6 mt-12">
+        <h3 class="section-title text-2xl font-semibold text-center w-full">Was unsere Spieler sagen</h3>
+        
+    
+        
+        <!-- Rezensionen Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <!-- Rezension 1 -->
+            <div class="glass rounded-2xl overflow-hidden game-card relative h-48">
+                <img src="https://image.stern.de/33225454/t/Wd/v2/w1440/r1/-/elias-nerlich.jpg" alt="Max" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+                    <div class="flex items-center mb-2">
+                        <div class="font-semibold text-white text-sm mr-2">Max</div>
+                        <div class="flex text-yellow-400 text-xs">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-white/90 text-xs mb-1 line-clamp-2">
+                        "Habe über Nextplay meinen festen Gaming-Buddy gefunden! Wir zocken jetzt regelmäßig zusammen."
+                    </p>
+                    <div class="text-white/60 text-xs">Valorant</div>
+                </div>
+            </div>
+            
+            <!-- Rezension 2 -->
+            <div class="glass rounded-2xl overflow-hidden game-card relative h-48">
+                <img src="https://www.ingame.de/assets/images/30/978/30978092-twitch-streamerin-honeypuu-an-ihrem-streaming-setup-1EVfRtVI0Ze9.jpg" alt="Sarah" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+                    <div class="flex items-center mb-2">
+                        <div class="font-semibold text-white text-sm mr-2">Sarah</div>
+                        <div class="flex text-yellow-400 text-xs">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-white/90 text-xs mb-1 line-clamp-2">
+                        "Die Community hier ist super respektvoll! Habe tolle Leute kennengelernt."
+                    </p>
+                    <div class="text-white/60 text-xs">Apex Legends</div>
+                </div>
+            </div>
+            
+            <!-- Rezension 3 -->
+            <div class="glass rounded-2xl overflow-hidden game-card relative h-48">
+                <img src="https://liquipedia.net/commons/images/thumb/f/f4/TabseN_WESG_2017.jpg/450px-TabseN_WESG_2017.jpg" alt="Tom" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
+                    <div class="flex items-center mb-2">
+                        <div class="font-semibold text-white text-sm mr-2">Tom</div>
+                        <div class="flex text-yellow-400 text-xs">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                    <p class="text-white/90 text-xs mb-1 line-clamp-2">
+                        "Endlich eine Plattform, die wirklich funktioniert! Habe 5 neue Gaming-Partner gefunden."
+                    </p>
+                    <div class="text-white/60 text-xs">Fortnite</div>
+                </div>
+            </div>
+        </div>
+        
+           <!-- Eigene Bewertung abgeben -->
+        <div class="glass p-4 rounded-2xl">
+            <h4 class="font-semibold text-lg mb-4 text-center text-cyan-400">Teile deine Erfahrung</h4>
+            
+            <div class="flex flex-col md:flex-row gap-6 items-start">
+                <!-- Sternebewertung links -->
+                <div class="md:w-1/3">
+                    <div class="text-center md:text-left">
+                        <div class="mb-3">
+                            <div class="flex justify-center md:justify-start mb-2" id="star-rating">
+                                <i class="far fa-star text-2xl mx-1 cursor-pointer text-yellow-400" data-rating="1"></i>
+                                <i class="far fa-star text-2xl mx-1 cursor-pointer text-yellow-400" data-rating="2"></i>
+                                <i class="far fa-star text-2xl mx-1 cursor-pointer text-yellow-400" data-rating="3"></i>
+                                <i class="far fa-star text-2xl mx-1 cursor-pointer text-yellow-400" data-rating="4"></i>
+                                <i class="far fa-star text-2xl mx-1 cursor-pointer text-yellow-400" data-rating="5"></i>
+                            </div>
+                            <div class="text-white/60 text-sm" id="rating-text">Bewerte uns (klicke auf die Sterne)</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <input type="text" placeholder="Dein Name" class="w-full glass border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Textfeld rechts -->
+                <div class="md:w-2/3">
+                    <form id="review-form">
+                        <div class="mb-4">
+                            <textarea placeholder="Teile deine Erfahrung mit Nextplay... Was hat dir besonders gut gefallen? Hast du tolle Gaming-Partner gefunden?" 
+                                      rows="4" 
+                                      class="w-full glass border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors h-32"></textarea>
+                        </div>
+                        <div class="text-center md:text-right">
+                            <button type="submit" class="btn-main px-6 py-2 rounded-lg font-semibold text-sm">
+                                Bewertung abschicken
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<script>
+    // Sterne-Bewertung interaktiv machen
+    document.addEventListener('DOMContentLoaded', function() {
+        const stars = document.querySelectorAll('#star-rating i');
+        const ratingText = document.getElementById('rating-text');
+        
+        let currentRating = 0;
+        
+        stars.forEach(star => {
+            // Mouseover-Effekt
+            star.addEventListener('mouseover', function() {
+                const rating = parseInt(this.getAttribute('data-rating'));
+                highlightStars(rating);
+                updateRatingText(rating);
+            });
+            
+            // Mouseout-Effekt
+            star.addEventListener('mouseout', function() {
+                highlightStars(currentRating);
+                updateRatingText(currentRating);
+            });
+            
+            // Klick-Effekt
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.getAttribute('data-rating'));
+                highlightStars(currentRating);
+                updateRatingText(currentRating, true);
+            });
+        });
+        
+        function highlightStars(rating) {
+            stars.forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating <= rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                }
+            });
+        }
+        
+        function updateRatingText(rating, isFinal = false) {
+            const texts = {
+                0: "Bewerte uns (klicke auf die Sterne)",
+                1: "Schlecht",
+                2: "Okay",
+                3: "Gut",
+                4: "Sehr gut",
+                5: "Ausgezeichnet"
+            };
+            
+            if (isFinal) {
+                ratingText.innerHTML = `Du hast uns mit <span class="text-yellow-400 font-semibold">${rating} Sternen</span> bewertet`;
+            } else {
+                ratingText.textContent = texts[rating] || texts[0];
+            }
+        }
+        
+        // Formular abschicken
+        document.getElementById('review-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (currentRating === 0) {
+                alert('Bitte wähle eine Sternebewertung aus!');
+                return;
+            }
+            alert('Vielen Dank für deine Bewertung! Sie wird nach Überprüfung veröffentlicht.');
+            this.reset();
+            currentRating = 0;
+            highlightStars(0);
+            updateRatingText(0);
+        });
+    });
+</script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+    <!-- Footer / Impressum -->
+    <footer class="glass mt-16 p-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="font-semibold text-lg mb-4 text-cyan-400">Nextplay</h4>
+                    <p class="text-white/70 text-sm mb-4">
+                        Unterstütze unsere Community.
+                    </p>
+                    <button class="btn-main px-4 py-2 rounded-lg text-sm font-semibold w-auto inline-block">
+                        <i class="fas fa-heart mr-2"></i>Jetzt spenden
+                    </button>
+                    <p class="text-white/50 text-xs mt-2">
+                        Vielen Dank!
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Kontakt</h4>
+                    <ul class="text-white/70 text-sm space-y-2">
+                        <li><i class="fas fa-map-marker-alt mr-2 text-violet-400"></i> Nextplay GmbH, Alexanderplatz 1, 10178 Berlin</li>
+                        <li><i class="fas fa-phone mr-2 text-violet-400"></i> +49 30 908782</li>
+                        <li><i class="fas fa-envelope mr-2 text-violet-400"></i> info@nextplay.com</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Rechtliches</h4>
+                    <ul class="text-white/70 text-sm space-y-2">
+                        <li><a href="#" class="hover:text-cyan-400 transition">Impressum</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition">Datenschutz</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition">AGB</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition">Cookie-Richtlinie</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Kooperationen</h4>
+                    <p class="text-white/70 text-sm mb-3">
+                        Interessiert an einer Partnerships? Kontaktiere uns für Kooperationsmöglichkeiten.
+                    </p>
+                    <button class="btn-main px-4 py-2 rounded-lg text-sm font-semibold">Partner werden</button>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 mt-8 pt-6 text-center text-white/50 text-sm">
+                <p>&copy; 2025 Nextplay GmbH. Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+	
+<!-- Chatbot mit Benachrichtigung -->
+<div class="fixed bottom-5 left-5">
+    <!-- Benachrichtigung über dem Chatbot -->
+    <div class="glass rounded-xl mb-3 overflow-hidden border border-violet-400/50 shadow-2xl chat-container" 
+         style="width: 380px; height: 500px;" 
+         id="notification">
+        
+        <!-- Header mit Schließen-Button -->
+        <div class="glass border-b border-white/10 p-4 flex justify-between items-center chat-header" onclick="toggleNotification()">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&crop=face" 
+                         alt="Lena" 
+                         class="w-10 h-10 rounded-full object-cover border-2 border-violet-400">
+                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+                </div>
+                <div>
+                    <div class="font-semibold text-violet-300">Lena</div>
+                    <div class="text-xs text-white/60">2 km entfernt • Online</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="event.stopPropagation(); closeNotification()" class="text-white/50 hover:text-white transition-colors p-2 rounded-full hover:bg-white/10">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="toggle-icon text-white/70">
+                    <i class="fas fa-chevron-up"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat-Inhalt -->
+        <div class="chat-content relative h-full">
+            <!-- Großes Profilbild als Hintergrund -->
+            <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                 style="background-image: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&h=800&fit=crop&crop=face')">
+            </div>
+            
+            <!-- Dunkler Overlay für bessere Lesbarkeit -->
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+            
+            <!-- Chat-Nachrichten -->
+            <div class="relative h-[calc(100%-120px)] overflow-y-auto p-4 space-y-4">
+                <!-- Ihre Nachricht -->
+                <div class="flex items-start gap-3">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=40&h=40&fit=crop&crop=face" 
+                         alt="Lena" 
+                         class="w-8 h-8 rounded-full object-cover border-2 border-violet-400 flex-shrink-0">
+                    <div class="flex-1">
+                        <div class="font-semibold text-violet-300 text-sm mb-1">Lena</div>
+                        <div class="bg-violet-600/50 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-violet-400/50">
+                            <p class="text-white/90 text-sm">Hey! Ich sehe wir spielen die gleichen Games. Lust auf eine Runde Valorant? 😊</p>
+                        </div>
+                        <div class="text-xs text-white/60 mt-1 ml-1">Vor 2 Minuten</div>
+                    </div>
+                </div>
+
+                <!-- Gemeinsame Interessen -->
+                <div class="bg-black/40 backdrop-blur-sm rounded-2xl p-3 mt-4 border border-white/10">
+                    <div class="text-xs text-cyan-400 font-semibold mb-2">🎮 Gemeinsame Interessen</div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 text-xs bg-cyan-500/40 rounded-full text-cyan-300 border border-cyan-500/50">Valorant</span>
+                        <span class="px-2 py-1 text-xs bg-violet-500/40 rounded-full text-violet-300 border border-violet-500/50">Fortnite</span>
+                        <span class="px-2 py-1 text-xs bg-green-500/40 rounded-full text-green-300 border border-green-500/50">Apex Legends</span>
+                    </div>
+                </div>
+
+                <!-- Ihr Profil-Info -->
+                <div class="bg-black/40 backdrop-blur-sm rounded-2xl p-3 border border-white/10">
+                    <div class="text-xs text-cyan-400 font-semibold mb-2">👤 Lena's Profil</div>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-white/80">
+                        <div><span class="text-cyan-400">Level:</span> Fortgeschritten</div>
+                        <div><span class="text-cyan-400">Spielstil:</span> Competitive</div>
+                        <div><span class="text-cyan-400">Sprachen:</span> DE, EN</div>
+                        <div><span class="text-cyan-400">Alter:</span> 24</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schreibfeld -->
+            <div class="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm border-t border-white/20 p-4">
+                <div class="flex gap-2">
+                    <input type="text" 
+                           placeholder="Antworte Lena..." 
+                           class="flex-1 bg-white/20 border border-white/30 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-cyan-400 transition-colors placeholder-white/50 backdrop-blur-sm">
+                    <button class="bg-gradient-to-r from-cyan-500 to-violet-500 hover:from-cyan-600 hover:to-violet-600 text-white px-4 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 backdrop-blur-sm">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button class="flex-1 bg-violet-600/80 hover:bg-violet-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors duration-200 text-center backdrop-blur-sm">
+                        <i class="fas fa-gamepad mr-1"></i> Spielen
+                    </button>
+                    <button class="flex-1 bg-cyan-600/80 hover:bg-cyan-700 text-white py-2 px-3 rounded-lg text-sm font-semibold transition-colors duration-200 text-center backdrop-blur-sm">
+                        <i class="fas fa-user mr-1"></i> Profil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="glass chat-container rounded-xl collapsed" id="chatbot" style="width: 380px; height: 500px;">
+        <div class="chat-header flex justify-between items-center" onclick="toggleChat()">
+            <div>
+                <div class="font-semibold text-lg text-cyan-400">Nextplay Bot 💬</div>
+                <div class="text-xs text-white/60">Online - Klicken zum Ein-/Ausklappen</div>
+            </div>
+            <div class="toggle-icon text-white/70">
+                <i class="fas fa-chevron-up"></i>
+            </div>
+        </div>
+        
+        <div class="chat-messages flex flex-col">
+            <div class="message bot-message">
+                <div class="font-semibold text-cyan-400 text-sm">Nextplay Bot</div>
+                <div class="text-white/80">Hey! Ich bin dein Gaming-Assistent. Brauchst du Hilfe, um Mitspieler zu finden?</div>
+            </div>
+            
+            <div class="message user-message">
+                <div class="font-semibold text-violet-400 text-sm">Du</div>
+                <div class="text-white/80">Wie finde ich Spieler in meiner Nähe?</div>
+            </div>
+            
+            <div class="message bot-message">
+                <div class="font-semibold text-cyan-400 text-sm">Nextplay Bot</div>
+                <div class="text-white/80">Nutze unsere interaktive Karte! Sie zeigt dir alle aktiven Spieler in deiner Umgebung an. Du kannst nach Spiel, Skill-Level und Verfügbarkeit filtern.</div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" placeholder="Schreibe eine Nachricht..." class="flex-grow bg-transparent text-white px-3 py-2 rounded-l-lg focus:outline-none">
+            <button class="btn-main px-4 py-2 rounded-r-lg font-semibold">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Benachrichtigung Styles */
+    #notification {
+        background: rgba(30, 30, 35, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(155, 94, 255, 0.3);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        animation: slideInUp 0.5s ease-out;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #notification.collapsed {
+        height: 60px !important;
+    }
+
+    #notification.collapsed .chat-content {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .chat-content {
+        flex-grow: 1;
+        transition: opacity 0.3s;
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes slideOutDown {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+    }
+
+    /* Chat Container Anpassungen */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        transition: all 0.3s ease;
+    }
+    
+    .chat-container.collapsed {
+        height: 60px !important;
+    }
+    
+    .chat-header {
+        cursor: pointer;
+        padding: 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 10px;
+        transition: opacity 0.3s;
+    }
+    
+    .chat-container.collapsed .chat-messages {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        transition: opacity 0.3s;
+    }
+    
+    .chat-container.collapsed .chat-input {
+        opacity: 0;
+        pointer-events: none;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        padding: 10px 15px;
+        border-radius: 18px;
+        max-width: 80%;
+    }
+    
+    .bot-message {
+        background: rgba(155, 94, 255, 0.2);
+        border-bottom-left-radius: 5px;
+        align-self: flex-start;
+    }
+    
+    .user-message {
+        background: rgba(0, 224, 255, 0.2);
+        border-bottom-right-radius: 5px;
+        align-self: flex-end;
+        margin-left: auto;
+    }
+    
+    .toggle-icon {
+        transition: transform 0.3s;
+    }
+    
+    .chat-container.collapsed .toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    /* Scrollbar Styling */
+    #notification .chat-content div[class*="overflow-y-auto"]::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    #notification .chat-content div[class*="overflow-y-auto"]::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    #notification .chat-content div[class*="overflow-y-auto"]::-webkit-scrollbar-thumb {
+        background: rgba(155, 94, 255, 0.5);
+        border-radius: 3px;
+    }
+    
+    #notification .chat-content div[class*="overflow-y-auto"]::-webkit-scrollbar-thumb:hover {
+        background: rgba(155, 94, 255, 0.7);
+    }
+
+    /* Transparenz für besseren Bild-Effekt */
+    #notification .bg-black\/60 {
+        background-color: rgba(0, 0, 0, 0.4) !important;
+    }
+
+    #notification .bg-black\/40 {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+    }
+</style>
+
+<script>
+    function toggleChat() {
+        const chat = document.getElementById('chatbot');
+        chat.classList.toggle('collapsed');
+    }
+    
+    function toggleNotification() {
+        const notification = document.getElementById('notification');
+        notification.classList.toggle('collapsed');
+    }
+    
+    function closeNotification() {
+        const notification = document.getElementById('notification');
+        notification.style.animation = 'slideOutDown 0.5s ease-out forwards';
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }
+
+    // Automatisches Schließen der Benachrichtigung nach 90 Sekunden
+    setTimeout(() => {
+        const notification = document.getElementById('notification');
+        if (notification) {
+            closeNotification();
+        }
+    }, 90000);
+
+    // Enter-Taste zum Senden im Benachrichtigungs-Chat
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationInput = document.querySelector('#notification input[type="text"]');
+        if (notificationInput) {
+            notificationInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const sendButton = this.nextElementSibling;
+                    sendButton.click();
+                }
+            });
+        }
+    });
+
+    // Klick auf Header zum Einklappen der Benachrichtigung
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationHeader = document.querySelector('#notification .chat-header');
+        if (notificationHeader) {
+            // Verhindere, dass Klick auf Schließen-Button auch einklappt
+            const closeBtn = notificationHeader.querySelector('button');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
