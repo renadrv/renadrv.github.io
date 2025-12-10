@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -678,110 +679,449 @@
     </section>
 
 
-
 <!-- Eventpass / Bonus-System -->
-<section id="eventpass" class="max-w-7xl mx-auto p-6 mt-12">
-    <h3 class="section-title text-2xl font-semibold text-center w-full">Eventpass & Bonus-System</h3>
+<section id="eventpass" class="max-w-7xl mx-auto p-6 mt-12 relative overflow-hidden">
+    <!-- Hintergrund Animation -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -left-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/3 -right-40 w-96 h-96 bg-violet-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-40 left-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 right-1/3 w-72 h-72 bg-yellow-500/5 rounded-full blur-3xl animate-pulse-slow"></div>
+    </div>
     
-    <div class="glass p-6 rounded-2xl mt-6">
-        <div class="flex flex-col md:flex-row gap-8 items-center">
-            <div class="md:w-1/3 flex justify-center">
-                <div class="relative">
-                    <div class="w-48 h-48 rounded-full bg-gradient-to-br from-cyan-400 to-violet-500 flex items-center justify-center text-white text-6xl font-bold shadow-lg animate-pulse">
-                        EP
-                    </div>
-                    <div class="absolute -top-2 -right-2 bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-bold animate-bounce">
-                        NEU
-                    </div>
-                    <div class="absolute inset-0 rounded-full border-4 border-cyan-400 animate-ping opacity-75"></div>
-                    <div class="absolute inset-4 rounded-full border-2 border-violet-400 animate-spin duration-3000"></div>
+    <h3 class="section-title text-2xl font-semibold text-center w-full relative z-10">Eventpass & Bonus-System</h3>
+    
+    <div class="glass p-8 rounded-3xl mt-6 relative z-10 backdrop-blur-xl">
+        <!-- Header -->
+        <div class="text-center mb-10">
+            <h4 class="font-bold text-3xl mb-3 text-cyan-400">Sammle Punkte, schalte Belohnungen frei!</h4>
+            <p class="text-white/70 text-lg max-w-3xl mx-auto">
+                Mit dem Nextplay Eventpass sammelst du Punkte durch Gaming-Aktivitäten. Jeder Meilenstein bringt dich näher an exklusive Gewinne und Überraschungen!
+            </p>
+        </div>
+        
+        <!-- Fortschrittsbalken -->
+        <div class="mb-12">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <span class="text-white/70">Aktuelle Punkte:</span>
+                    <span class="text-cyan-400 font-bold text-2xl ml-2">420</span>
+                </div>
+                <div>
+                    <span class="text-white/70">Ziel:</span>
+                    <span class="text-violet-400 font-bold text-xl ml-2">2000 Punkte</span>
                 </div>
             </div>
             
-            <div class="md:w-2/3">
-                <h4 class="font-semibold text-2xl mb-4 text-cyan-400">Sammle Punkte, gewinne Tickets!</h4>
-                <p class="text-white/70 mb-4">
-                    Mit dem Nextplay Eventpass sammelst du Punkte bei Gaming-Events, indem du neue Mitspieler kennenlernst und mit ihnen spielst. 
-                    Diese Punkte kannst du für exklusive Gewinnspiele nutzen und Tickets für große Gaming-Events gewinnen!
-                </p>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div class="flex items-start">
-                        <div class="bg-violet-500/20 p-2 rounded-lg mr-3">
-                            <i class="fas fa-ticket-alt text-violet-400"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold">Event-Tickets gewinnen</h5>
-                            <p class="text-white/60 text-sm">Tausche Punkte gegen Tickets für große Events</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="bg-cyan-500/20 p-2 rounded-lg mr-3">
-                            <i class="fas fa-users text-cyan-400"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold">Neue Spieler treffen</h5>
-                            <p class="text-white/60 text-sm">Sammle Punkte für jedes neue Match</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="bg-violet-500/20 p-2 rounded-lg mr-3">
-                            <i class="fas fa-medal text-violet-400"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold">Exklusive Belohnungen</h5>
-                            <p class="text-white/60 text-sm">Freischaltbare Inhalte & Abzeichen</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="bg-cyan-500/20 p-2 rounded-lg mr-3">
-                            <i class="fas fa-calendar-alt text-cyan-400"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-semibold">Regionale Events</h5>
-                            <p class="text-white/60 text-sm">Finde Events in deiner Nähe</p>
-                        </div>
+            <div class="relative">
+                <!-- Hintergrund -->
+                <div class="w-full bg-gray-800 rounded-full h-6 overflow-hidden">
+                    <!-- Fortschritt mit Animation -->
+                    <div class="bg-gradient-to-r from-cyan-500 via-violet-500 to-purple-600 h-6 rounded-full relative overflow-hidden" style="width: 21%">
+                        <!-- Leuchteffekt -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
+                        <!-- Pulsierender Rand -->
+                        <div class="absolute right-0 top-0 w-2 h-6 bg-white rounded-full animate-pulse shadow-glow"></div>
                     </div>
                 </div>
                 
-                <div class="flex flex-col sm:flex-row gap-4">
-                    <button class="btn-main px-6 py-3 rounded-xl font-semibold flex-1 text-center">
-                        Jetzt Eventpass aktivieren
-                    </button>
-                    <button class="glass px-6 py-3 rounded-xl font-semibold flex-1 text-center border border-cyan-400/30 text-cyan-400">
-                        Kommende Events ansehen
-                    </button>
+                <!-- Ziel-Marker -->
+                <div class="absolute right-0 top-0 transform -translate-y-1">
+                    <div class="text-center">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center mx-auto border-4 border-white shadow-lg animate-pulse relative">
+                            <i class="fas fa-coins text-white text-lg"></i>
+                            <!-- Glow Effect -->
+                            <div class="absolute inset-0 rounded-full bg-yellow-400/30 blur-md animate-ping"></div>
+                        </div>
+                        <div class="text-xs text-yellow-300 mt-1 font-bold">2000</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Text -->
+            <div class="text-center mt-6">
+                <div class="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 px-4 py-2 rounded-full">
+                    <i class="fas fa-bullseye text-cyan-400"></i>
+                    <span class="text-white/80 text-sm">Spiele mit Freunden und sammle Punkte.</span>
                 </div>
             </div>
         </div>
         
-        <!-- Fortschrittsbalken -->
-        <div class="mt-8 pt-6 border-t border-white/10">
-            <h5 class="font-semibold text-lg mb-4 text-center">Dein aktueller Eventpass-Fortschritt</h5>
+        <!-- Gaming Timeline -->
+        <div class="mb-10">
+            <h5 class="font-semibold text-xl mb-8 text-center text-violet-300">Dein Gaming-Fortschritt</h5>
             
-            <div class="max-w-2xl mx-auto">
-                <div class="flex justify-between text-sm text-white/70 mb-2">
-                    <span>Aktuelle Punkte: <span class="text-cyan-400 font-semibold">100</span></span>
-                    <span>Nächstes Level: <span class="text-violet-400 font-semibold">500 Punkte</span></span>
-                </div>
+            <div class="relative pl-12">
+                <!-- Timeline Linie -->
+                <div class="absolute left-6 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-500 via-violet-500 to-purple-600"></div>
                 
-                <div class="w-full bg-gray-700 rounded-full h-4 mb-6">
-                    <div class="bg-gradient-to-r from-cyan-400 to-violet-500 h-4 rounded-full" style="width: 20%"></div>
-                </div>
-                
-                <div class="flex justify-between text-xs text-white/60">
-                    <span>Bronze (100)</span>
-                    <span>Silber (500)</span>
-                    <span>Gold (1000)</span>
-                    <span>Platin (2000)</span>
+                <!-- Timeline Items -->
+                <div class="space-y-12">
+                    <!-- Meilenstein 1 -->
+                    <div class="relative group">
+                        <!-- Timeline Punkt -->
+                        <div class="absolute -left-9 top-0 w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center border-4 border-gray-900 shadow-lg group-hover:scale-110 transition-transform duration-300 z-10">
+                            <i class="fas fa-search text-white"></i>
+                            <div class="absolute -inset-3 bg-cyan-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="glass p-6 rounded-2xl border border-cyan-500/30 group-hover:border-cyan-500/60 transition-all duration-300 ml-4 backdrop-blur-lg">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex-1">
+                                    <h6 class="font-bold text-xl text-cyan-400 mb-2">Matchmaking & Kennenlernen</h6>
+                                    <p class="text-white/70">
+                                        Finde Spieler mit gleichen Interessen. Für jedes erfolgreiche Match und jede Unterhaltung sammelst du Punkte! Chatte mit neuen Gaming-Partnern und entdecke gemeinsame Spiele.
+                                    </p>
+                                </div>
+                                <span class="bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ml-4">+10 Punkte</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-3 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-comment-dots text-cyan-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Chat mit<br>Mitspielern</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-heart text-cyan-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Gemeinsame<br>Interessen</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-user-friends text-cyan-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Neue<br>Kontakte</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-star text-cyan-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Bewertungen<br>geben</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Meilenstein 2 -->
+                    <div class="relative group">
+                        <!-- Timeline Punkt -->
+                        <div class="absolute -left-9 top-0 w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center border-4 border-gray-900 shadow-lg group-hover:scale-110 transition-transform duration-300 z-10">
+                            <i class="fas fa-gamepad text-white"></i>
+                            <div class="absolute -inset-3 bg-violet-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="glass p-6 rounded-2xl border border-violet-500/30 group-hover:border-violet-500/60 transition-all duration-300 ml-4 backdrop-blur-lg">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex-1">
+                                    <h6 class="font-bold text-xl text-violet-400 mb-2">Gemeinsames Gaming & Quests</h6>
+                                    <p class="text-white/70">
+                                        Spielt zusammen und löst spezielle Gaming-Quests! Für jede gemeinsame Session und jeden abgeschlossenen Quest gibt es Bonuspunkte. Werde zum Dreamteam und meistere Challenges.
+                                    </p>
+                                </div>
+                                <span class="bg-violet-500/20 text-violet-300 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ml-4">+50 Punkte</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-3 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-flag-checkered text-violet-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Tägliche<br>Quests</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-users text-violet-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Teamplay<br>Sessions</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-medal text-violet-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Achieve-<br>ments</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-chart-line text-violet-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Skill-<br>Verbesserung</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Meilenstein 3 -->
+                    <div class="relative group">
+                        <!-- Timeline Punkt -->
+                        <div class="absolute -left-9 top-0 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center border-4 border-gray-900 shadow-lg group-hover:scale-110 transition-transform duration-300 z-10">
+                            <i class="fas fa-ticket-alt text-white"></i>
+                            <div class="absolute -inset-3 bg-purple-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="glass p-6 rounded-2xl border border-purple-500/30 group-hover:border-purple-500/60 transition-all duration-300 ml-4 backdrop-blur-lg">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex-1">
+                                    <h6 class="font-bold text-xl text-purple-400 mb-2">Events & Community-Treffen</h6>
+                                    <p class="text-white/70">
+                                        Besuche Gaming-Events, treffe dich mit der Community oder nimm an Turnieren teil. Für jedes Event erhältst du exklusive Punkte! Lerne Spieler persönlich kennen und werde Teil der Nextplay-Familie.
+                                    </p>
+                                </div>
+                                <span class="bg-purple-500/20 text-purple-300 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ml-4">+100 Punkte</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-3 text-center">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-ticket-alt text-purple-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Event-<br>Tickets</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-trophy text-purple-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Turniere</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-map-marker-alt text-purple-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Lokale<br>Treffen</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-award text-purple-400 text-xl mb-2"></i>
+                                    <span class="text-sm text-white/80">Exklusive<br>Preise</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+        
+        <!-- Belohnungen Grid -->
+        <div class="mb-8">
+            <h5 class="font-semibold text-xl mb-6 text-center text-cyan-300">Deine Belohnungen <span class="text-yellow-400"></span></h5>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Belohnung 1 -->
+                <div class="glass p-6 rounded-2xl border border-cyan-500/20 hover:border-cyan-500/50 transition-all duration-300 hover:scale-105 group backdrop-blur-lg relative">
+                    <div class="absolute -top-3 -right-3 bg-gradient-to-br from-cyan-500 to-cyan-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                        2000 Punkte
+                    </div>
+                    <div class="relative mb-4">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mx-auto relative">
+                            <i class="fas fa-gift text-white text-3xl"></i>
+                            <div class="absolute -inset-2 bg-cyan-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                    </div>
+                    <h6 class="font-bold text-xl text-white mb-3 text-center">Exklusive Skin-Pakete</h6>
+                    <p class="text-white/60 text-sm mb-4 text-center">
+                        Gewinne ein Überraschungspaket mit random Skins für deine Lieblingsspiele! Enthält seltene und exklusive Designs.
+                    </p>
+                    <div class="text-center">
+                        <span class="inline-block bg-cyan-500/20 text-cyan-300 px-4 py-2 rounded-lg text-sm font-semibold">
+                            <i class="fas fa-random mr-2"></i>Random Skin-Los
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Belohnung 2 -->
+                <div class="glass p-6 rounded-2xl border border-violet-500/20 hover:border-violet-500/50 transition-all duration-300 hover:scale-105 group backdrop-blur-lg relative">
+                    <div class="absolute -top-3 -right-3 bg-gradient-to-br from-violet-500 to-violet-600 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                        2000 Punkte
+                    </div>
+                    <div class="relative mb-4">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto relative">
+                            <i class="fas fa-ticket-alt text-white text-3xl"></i>
+                            <div class="absolute -inset-2 bg-violet-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                    </div>
+                    <h6 class="font-bold text-xl text-white mb-3 text-center">Event-Ticket Gewinnspiel</h6>
+                    <p class="text-white/60 text-sm mb-4 text-center">
+                        Erhalte ein Los für die Verlosung von Tickets zu exklusiven Gaming-Events, Turnieren und Community-Treffen.
+                    </p>
+                    <div class="text-center">
+                        <span class="inline-block bg-violet-500/20 text-violet-300 px-4 py-2 rounded-lg text-sm font-semibold">
+                            <i class="fas fa-dice mr-2"></i>Ticket-Gewinnspiel
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Belohnung 3 -->
+                <div class="glass p-6 rounded-2xl border border-yellow-500/20 hover:border-yellow-500/50 transition-all duration-300 hover:scale-105 group backdrop-blur-lg relative">
+                    <div class="absolute -top-3 -right-3 bg-gradient-to-br from-yellow-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg">
+                        2000 Punkte
+                    </div>
+                    <div class="relative mb-4">
+                        <div class="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center mx-auto relative">
+                            <i class="fas fa-key text-white text-3xl"></i>
+                            <div class="absolute -inset-2 bg-yellow-500/30 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                    </div>
+                    <h6 class="font-bold text-xl text-white mb-3 text-center">Spiele-Gutscheine & Keys</h6>
+                    <p class="text-white/60 text-sm mb-4 text-center">
+                        Gewinne Gutscheine für Steam, Epic Games oder Keys für neue Spiele in exklusiven Verlosungen.
+                    </p>
+                    <div class="text-center">
+                        <span class="inline-block bg-yellow-500/20 text-yellow-300 px-4 py-2 rounded-lg text-sm font-semibold">
+                            <i class="fas fa-gem mr-2"></i>Key-Gewinnspiel
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+         <br><br>
+        
+        <!-- Call to Action -->
+        <div class="text-center pt-6 border-t border-white/10">
+            <div class="relative inline-block">
+                <!-- Pulsierender Ring um Button -->
+                <div class="absolute -inset-4 bg-gradient-to-r from-cyan-500/30 via-violet-500/30 to-purple-500/30 rounded-full blur-lg animate-pulse"></div>
+                
+                <!-- Animated Button -->
+                <button class="relative bg-gradient-to-r from-cyan-500 via-violet-500 to-purple-600 hover:from-cyan-600 hover:via-violet-600 hover:to-purple-700 text-white font-bold py-5 px-14 rounded-2xl text-2xl transform hover:scale-105 transition-all duration-300 shadow-2xl animate-glow">
+                    <div class="flex items-center justify-center gap-3">
+                        <div class="relative">
+                            <i class="fas fa-coins text-white text-2xl"></i>
+                            <!-- Coins Animation -->
+                            <div class="absolute -inset-2 bg-yellow-400/20 rounded-full animate-ping opacity-75"></div>
+                        </div>
+                        <span>Punkte sammeln</span>
+                    </div>
+                </button>
+                
+                <!-- Floating Coins Animation -->
+                <div class="absolute -top-6 -right-6 w-8 h-8 animate-float">
+                    <i class="fas fa-coins text-yellow-400 text-xl"></i>
+                </div>
+                <div class="absolute -bottom-4 -left-6 w-6 h-6 animate-float-delayed">
+                    <i class="fas fa-coins text-yellow-400"></i>
+                </div>
+            </div>
+            
+            
+        </div>
     </div>
 </section>
+
+<style>
+    /* Shimmer Animation für Fortschrittsbalken */
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+    
+    .animate-shimmer {
+        animation: shimmer 2s infinite;
+    }
+    
+    /* Glow Animation für Button */
+    @keyframes glow {
+        0%, 100% {
+            box-shadow: 0 0 20px rgba(0, 224, 255, 0.5), 0 0 40px rgba(155, 94, 255, 0.3);
+        }
+        50% {
+            box-shadow: 0 0 30px rgba(0, 224, 255, 0.7), 0 0 60px rgba(155, 94, 255, 0.5);
+        }
+    }
+    
+    .animate-glow {
+        animation: glow 2s infinite;
+    }
+    
+    /* Floating Coins Animation */
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-10px) rotate(10deg);
+        }
+    }
+    
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float-delayed {
+        0%, 100% {
+            transform: translateY(0) rotate(0deg);
+        }
+        50% {
+            transform: translateY(-8px) rotate(-10deg);
+        }
+    }
+    
+    .animate-float-delayed {
+        animation: float-delayed 4s ease-in-out infinite;
+        animation-delay: 1s;
+    }
+    
+    /* Langsamer Puls für Hintergrund */
+    @keyframes pulse-slow {
+        0%, 100% {
+            opacity: 0.1;
+        }
+        50% {
+            opacity: 0.2;
+        }
+    }
+    
+    .animate-pulse-slow {
+        animation: pulse-slow 4s infinite;
+    }
+    
+    /* Shadow Glow */
+    .shadow-glow {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+    
+    /* Zentrierte Grid Items */
+    .grid.grid-cols-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        text-align: center;
+    }
+    
+    /* Flex Container für zentrierte Icons und Text */
+    .flex.flex-col.items-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Glow Effekt für Belohnungskarten */
+    .group:hover .glass {
+        box-shadow: 0 10px 30px rgba(0, 224, 255, 0.2);
+    }
+    
+    /* Responsive Anpassungen */
+    @media (max-width: 768px) {
+        .relative.pl-12 {
+            padding-left: 3rem;
+        }
+        
+        .grid.grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .flex.justify-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .flex.justify-between .bg-cyan-500\/20,
+        .flex.justify-between .bg-violet-500\/20,
+        .flex.justify-between .bg-purple-500\/20 {
+            margin-left: 0;
+            align-self: flex-start;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .grid.grid-cols-4 {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        button.text-2xl {
+            font-size: 1.25rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+    }
+</style>
 
 
 
